@@ -24,6 +24,8 @@ let diam;
 let system;
 let rad;
 let angle;
+//Offscreen graphic for circle effect
+let pg;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -33,12 +35,17 @@ function setup() {
     textAlign(CENTER, CENTER);
     diam = windowWidth/6;
 
+    pg = createGraphics(windowWidth, windowHeight);
+
     //Particle system
     rad = diam/2;
     angle = 0;
     system = new ParticleSystem(createVector(windowWidth/2, windowHeight/2));
     //fill particles array
-    for (let i = 0; i < windowWidth/100; i++){
+    // for (let i = 0; i < windowWidth/100; i++){
+    //     system.particles.push(new Particle(random(0, 2 * PI)));
+    // }
+    for (let i = 0; i < 3; i++){
         system.particles.push(new Particle(random(0, 2 * PI)));
     }
 }
@@ -47,17 +54,28 @@ function draw() {
     background(bgd);
     diam = windowWidth/6;
     rad = diam/2;
-    //Change 'loading' to to leap connection check
+
+    //Change to show 'loading' while connecting to leap motion or other external devices
     if (mode === "loading"){
         fill(Interface.main.TextColor);
         textSize(24);
         text('Loading…', windowWidth/2, windowHeight/2);
+
+        // Erase Instructions
+        textSize(12);
+        text('This page is used until connection with sensor is established. Hit SPACEBAR to go to first page', windowWidth/2, windowHeight/8);
 
     }else if (mode === "main") {
       bgd = Interface.main.BackgroundColor;
       fill(Interface.main.TextColor);
       textSize(30);
       text('How are you feeling today?', windowWidth / 2, windowHeight / 5);
+
+      //Erase Instructions
+      textSize(12);
+      text('Click inside circle to select mood', windowWidth/2, windowHeight/8);
+      text('This selection should be possible from a distance using the Leap Sensor, probably?', windowWidth/2, windowHeight/7);
+
 
       // Mood text
       textSize(17);
@@ -78,12 +96,21 @@ function draw() {
           // let idx = indexOf(Interface.meditation.Mood.mood);
           // console.log(idx);
           background(Interface.meditation.BackgroundColor[moodNum]);
+
+          //Particle system
+          system.run();
+          tint(255, 120)
+          image(pg, 0, 0);
           fill(Interface.meditation.CircleColor[moodNum]);
           ellipseMode(CENTER);
           ellipse(windowWidth/2, windowHeight/2, diam, diam);
 
-          //Particle system
-          system.run();
+          //Erase Instructions
+          fill(255);
+          textSize(12);
+          text('Return to previous page with SPACEBAR', windowWidth/2, windowHeight/8);
+
+
       }
 }
 
@@ -120,9 +147,13 @@ function windowResized() {
 
     system = new ParticleSystem(createVector(windowWidth/2, windowHeight/2));
     //fill particles array
-    for (let i = 0; i < windowWidth/10; i++){
+    // for (let i = 0; i < windowWidth/10; i++){
+    //     system.particles.push(new Particle(random(0, 2 * PI)));
+    // }
+    for (let i = 0; i < 2; i++){
         system.particles.push(new Particle(random(0, 2 * PI)));
     }
+    pg.clear();
 }
 
 
@@ -142,17 +173,18 @@ Particle.prototype.run = function(){
 Particle.prototype.update = function(){
     t = frameCount%60;
     console.log(t);
-    if (t%10 === 0){
-        this.angle = this.angle0 + 2*PI*t/20;
+    //if (t%10 === 0){
+        this.angle = this.angle0 + 2*PI*t/60;
         this.position = createVector(system.center.x + rad * cos(this.angle) + random(-rad/8, rad/8) , system.center.y + rad * sin(this.angle) + random(-rad/8, rad/8) );
-    }
+    //}
 };
 
 Particle.prototype.display = function(){
-    noStroke();
-    //fill(255, 120);
-    //fill(this.pcolor);
-    //ellipse(this.position.x, this.position.y, 10, 10);
+    pg.noStroke();
+    //pg.fill(255, 220);
+    pg.fill(this.pcolor);
+    radius = random(width/70, width/60);
+    pg.ellipse(this.position.x, this.position.y, radius, radius);
 };
 
 let ParticleSystem = function(center){
