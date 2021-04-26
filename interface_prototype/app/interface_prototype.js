@@ -8,7 +8,8 @@ let Interface = {
         Mode: "meditation",
         Mood: ["focused", "calm", "loving"],
         BackgroundColor: ["#A3CCA9", "#A3C7CC", "#CAA4CC"],
-        CircleColor: ["#3C9344", "#38B2BF", "#C960A5"]}
+        CircleColor: ["#3C9344", "#38B2BF", "#C960A5"],
+        Sound: ["sound_focused", "sound_calm", "sound_loving"]}
     };
 
 let mode = "loading";
@@ -31,8 +32,16 @@ let pg;
 let controller;
 let brush = [];
 
+//Sound
+let sound = false;
+let sound_prev;
 
-
+function preload(){
+    sound_calm = loadSound('sounds/calm.mp3');
+    sound_focused = loadSound('sounds/focused.mp3');
+    sound_loving = loadSound('sounds/loving.mp3');
+    sound_bell = loadSound('sounds/bell.mp3');
+}
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -106,6 +115,9 @@ function draw() {
       //Draw fingers
       paint();
 
+      //Stop sound
+      sound.stop();
+
       //Check mood selection to set mood/colors
       }else if(mode === "meditation"){
           // let idx = indexOf(Interface.meditation.Mood.mood);
@@ -125,6 +137,21 @@ function draw() {
           textSize(12);
           text('Return to previous page with SPACEBAR', windowWidth/2, windowHeight/8);
 
+          sound_prev = sound;
+          if (moodNum === 0){
+              sound = sound_focused;
+          } else if (moodNum === 1) {
+              sound = sound_calm;
+          } else if (moodNum === 2){
+              sound = sound_loving;
+          }
+
+          if (sound_prev != false && sound_prev != sound) {
+              sound.stop();
+          }
+
+          sound.setVolume(0.02);
+          sound.play();
 
       }
 }
