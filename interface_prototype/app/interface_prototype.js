@@ -12,24 +12,26 @@ let Interface = {
         Sound: ["sound_focused", "sound_calm", "sound_loving"]}
     };
 
-let mode = "loading";
+let mode = "main";
 let mood = false;
 let moodNum = false;
 let bgd = Interface.main.BackgroundColor;
 let diam;
 
 //mouseCounter used only for prototype
- let mouse = false;
+let mouse = false;
 
 // Particle system
 let system;
 let rad;
 let angle;
+
 //Offscreen graphic for circle effect
 let pg;
 
 // LEAP SENSOR
 let controller;
+let listener;
 let brush = [];
 
 //Sound
@@ -49,26 +51,17 @@ function setup() {
     fill(Interface.main.TextColor);
     noStroke();
     textAlign(CENTER, CENTER);
-    diam = windowWidth/6;
-
     pg = createGraphics(windowWidth, windowHeight);
 
     //Particle system
-    rad = diam/2;
-    angle = 0;
     system = new ParticleSystem(createVector(windowWidth/2, windowHeight/2));
-    //fill particles array
-    // for (let i = 0; i < windowWidth/100; i++){
-    //     system.particles.push(new Particle(random(0, 2 * PI)));
-    // }
-    for (let i = 0; i < 3; i++){
-        system.particles.push(new Particle(random(0, 2 * PI)));
-    }
 
     controller = new Leap.Controller({
-        enableGestures: false
+        enableGestures: true
     });
     controller.connect();
+    controller.setBackground(false);
+
 }
 
 function draw() {
@@ -76,17 +69,17 @@ function draw() {
     diam = windowWidth/6;
     rad = diam/2;
 
-    //Change to show 'loading' while connecting to leap motion or other external devices
-    if (mode === "loading"){
-        fill(Interface.main.TextColor);
-        textSize(24);
-        text('Loading…', windowWidth/2, windowHeight/2);
 
-        // Erase Instructions
-        textSize(12);
-        text('This page is used until connection with sensor is established. Hit SPACEBAR to go to first page', windowWidth/2, windowHeight/8);
-
-    }else if (mode === "main") {
+    // if (mode === "loading"){
+    //     fill(Interface.main.TextColor);
+    //     textSize(24);
+    //     text('Loading…', windowWidth/2, windowHeight/2);
+    //     // Erase Instructions
+    //     textSize(12);
+    //     text('This page is used until connection with sensor is established. Hit SPACEBAR to go to first page', windowWidth/2, windowHeight/8);
+    //
+    // }else
+    if (mode === "main") {
       bgd = Interface.main.BackgroundColor;
       fill(Interface.main.TextColor);
       textSize(30);
@@ -112,21 +105,25 @@ function draw() {
           ellipse((i+1) * windowWidth/4, windowHeight/2, diam, diam);
       }
 
+      if (sound != false) {
+          sound.pause();
+      }
       //Draw fingers
       paint();
 
-      //Stop sound
-      sound.stop();
-
       //Check mood selection to set mood/colors
       }else if(mode === "meditation"){
-          // let idx = indexOf(Interface.meditation.Mood.mood);
-          // console.log(idx);
           background(Interface.meditation.BackgroundColor[moodNum]);
 
-          //Particle system
+          if (system.particles.length < 3){
+              system.particles.push(new Particle());
+          } else{
+              system.particles.shift();
+              system.particles.shift();
+          }
           system.run();
-          tint(255, 120)
+
+          tint(255, 120);
           image(pg, 0, 0);
           fill(Interface.meditation.CircleColor[moodNum]);
           ellipseMode(CENTER);
@@ -147,11 +144,10 @@ function draw() {
           }
 
           if (sound_prev != false && sound_prev != sound) {
-              sound.stop();
+              sound_prev.pause();
+              sound.setVolume(0.02);
+              sound.play();
           }
-
-          sound.setVolume(0.02);
-          sound.play();
 
       }
 }
@@ -169,7 +165,6 @@ function mouseReleased() {
         mode = "meditation";
         moodNum = 2;
     }
-
     mouse = false;
 }
 
@@ -186,25 +181,17 @@ function keyPressed(){
 
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
-
     system = new ParticleSystem(createVector(windowWidth/2, windowHeight/2));
-    //fill particles array
-    // for (let i = 0; i < windowWidth/10; i++){
-    //     system.particles.push(new Particle(random(0, 2 * PI)));
-    // }
-    for (let i = 0; i < 2; i++){
-        system.particles.push(new Particle(random(0, 2 * PI)));
-    }
-    pg.clear();
 }
 
 
 //Particle Effect Classes
-let Particle = function(angle){
-    this.angle0 = angle;
-    this.position = createVector(system.center.x + rad * cos(this.angle0), system.center.y + rad * sin(this.angle0));
-    //this.velocity = createVector(random(-1, 1), random(-1,1));
-    this.pcolor = color(255, 255, 255);
+
+let Particle = function(){
+    this.position = createVector(system.center.x, system.center.y);
+    this.pcolor = color(255, 255, 255, random(180));
+    this.radius = random(width/9, width/5);
+    this.a = 0;
 };
 
 Particle.prototype.run = function(){
@@ -213,26 +200,26 @@ Particle.prototype.run = function(){
 };
 
 Particle.prototype.update = function(){
-    t = frameCount%60;
-    console.log(t);
-    //if (t%10 === 0){
-        this.angle = this.angle0 + 2*PI*t/60;
-        this.position = createVector(system.center.x + rad * cos(this.angle) + random(-rad/8, rad/8) , system.center.y + rad * sin(this.angle) + random(-rad/8, rad/8) );
-    //}
+    if(frameCount % 60 === 0){
+        this.a = Math.cos(2 * Math.PI * frameCount/60);
+    }
+    this.radius += this.a
+    console.log(this.radius);
+    this.pcolor = color(255, 255, 255, random(50, 100));
 };
 
 Particle.prototype.display = function(){
-    pg.noStroke();
+    noStroke();
     //pg.fill(255, 220);
-    pg.fill(this.pcolor);
-    radius = random(width/70, width/60);
-    pg.ellipse(this.position.x, this.position.y, radius, radius);
+    fill(this.pcolor, random(180));
+    ellipse(this.position.x, this.position.y, this.radius, this.radius);
 };
 
 let ParticleSystem = function(center){
     this.center = center.copy();
     this.particles = [];
 };
+
 
 Particle.prototype.connect = function(){
     system.particles.forEach(particle => {
@@ -251,7 +238,7 @@ Particle.prototype.connect = function(){
 ParticleSystem.prototype.run = function(){
     for (let i = 0; i < this.particles.length; i++){
         let p = this.particles[i];
-        p.connect();
+        //p.connect();
         p.run();
     }
 };
@@ -260,13 +247,17 @@ ParticleSystem.prototype.run = function(){
 //Trial
 function paint() {
     let frame = controller.frame();
-    r = random(255);
-    g = random(255);
-    b = random(255);
+    rgb = (255, 255, 255);
     frame.fingers.forEach(finger => {
         x = finger.dipPosition[0] + width / 2;
         y = height - finger.dipPosition[1];
-        brush.push(new Brush(x, y, color(r, g, b), random(15)));
+        brush.push(new Brush(x, y, color(rgb), random(15)));
+    });
+
+    frame.fingers.forEach(finger => {
+        for (let i = 0; i < brush.length; i++) {
+            brush[i].render(createVector(finger.dipPosition[0] + width / 2, height - finger.dipPosition[1]));
+        }
     });
 
     frame.fingers.forEach(finger => {
@@ -293,7 +284,8 @@ Brush.prototype.display = function(pos) {
 
 Brush.prototype.render = function(pos) {
         return this.display(pos);
-    }
+}
+
 
 
 
