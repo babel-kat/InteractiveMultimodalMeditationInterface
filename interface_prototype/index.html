@@ -5,14 +5,20 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+
   <!-- P5.js -->
   <!-- PLEASE NO CHANGES BELOW THIS LINE (UNTIL I SAY SO) -->
-  <script language="javascript" type="text/javascript" src="libraries/p5.min.js"></script>
-  <script language="javascript" type="text/javascript" src="interface_prototype.js"></script>
+  <script language="javascript" type="text/javascript" src="lib/p5.min.js"></script>
+  <script language="javascript" type="text/javascript" src="lib/p5.sound.min.js"></script>
+  <script language="javascript" type="text/javascript" src="app/sound.js"></script>
+  <script language="javascript" type="text/javascript" src="lib/p5.speech.js"></script>
   <!-- OK, YOU CAN MAKE CHANGES BELOW THIS LINE AGAIN -->
+
+  <script type="text/javascript" src="lib/p5.dom.min.js"></script>
+  <!--<script type="text/javascript" src="app/setupSpeech.js"></script>-->
     
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.sound.min.js"></script>
+
 
   <!-- CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
@@ -21,12 +27,12 @@
 
   <script type="text/javascript" src="lib/jquery.min.js"></script>
 
-  <!-- Famo.us -->
-  <script type="text/javascript" src="lib/famous.min.js"></script>
-
   <!-- Leap -->
-  <script type="text/javascript" src="lib/leap.min.js"></script>
+  <script src="//js.leapmotion.com/0.2.0-beta1/leap.min.js"></script>
+  <!--<script type="text/javascript" src="lib/leap.min.js"></script>-->
   <script type="text/javascript" src="lib/leap-plugins.min.js"></script>
+  <!--<script src="https://js.leapmotion.com/leap-0.6.4.min.js"></script>-->
+  <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/leapjs/0.6.1/leap.min.js">-->
 
   <!-- Underscore/Backbone -->
   <script type="text/javascript" src="lib/underscore.min.js"></script>
@@ -34,7 +40,7 @@
 
 </head>
 <body>
-
+  <script language="javascript" type="text/javascript" src="interface_prototype.js"></script>
 <!--<div style="background-color:white" >-->
 <!--<h1> Multimodal Meditation</h1>-->
 <!--  <div class="topnav">-->
