@@ -21,9 +21,6 @@ let moodNum = false;
 let bgd = Interface.main.BackgroundColor;
 let diam;
 
-//mouseCounter used only for prototype
-let mouse = false;
-
 // Buttons / Sliders
 let instr_button;
 let back_button;
@@ -47,7 +44,9 @@ let sound;
 let sound_prev = false;
 
 //Speech
-var myRec;
+let myRec;
+let speech;
+let first_time = true;
 
 // Mudra img
 let one;
@@ -86,7 +85,9 @@ function setup() {
     myRec = new p5.SpeechRec('en-US', parseResult); // new P5.SpeechRec object
     myRec.continuous = true; // do continuous recognition
     myRec.interimResults = true; // allow partial recognition (faster, less accurate)
-    myRec.start(); // start engine
+    myRec.start();
+
+    speech = new p5.Speech()
 
     sound = sound_focus;
 
@@ -121,10 +122,10 @@ function draw() {
         fill(Interface.main.TextColor);
         textSize(24);
         text('Instructions', windowWidth/2, windowHeight/5);
-        textSize(12);
-        let sentences = ['You can navigate the different screens with your voice', 'Select between the different meditation modes by name',
+        textSize(13);
+        let sentences = ['You can navigate the different screens with your voice.', 'Select between the different meditation modes by name',
             'You can say:', '“focus”,', '“happy” or “happiness”,', '“Zen”,', '“sleep” or “relax”', 'to select a meditation mode',
-            'When in Meditation mode, say “Go Back” to return to the main menu.', 'During meditation you can press SPACE to return to the main page', 'Say “Nice”, “I am done”, or “Namaste” to go to the end screen and exit the application']
+            'When in Meditation mode, say “Go Back” to return to the main menu.', '', 'Say “Nice”, “I am done”, or “Namaste” to go to the end screen and exit the application', '', 'During meditation you can press SPACE to return to the main page', 'Press F to enter of exit fullscreen mode']
 
         for (let i = 0; i < sentences.length; i++){
             text(sentences[i], windowWidth/2, windowHeight/4 + 30 * i);
@@ -145,11 +146,13 @@ function draw() {
         instr_button.show()
         instr_button.mousePressed(changeModeInstr);
         volume_slider.hide()
+        back_button.hide()
 
         //Title
         textAlign(LEFT);
-        text('Welcome back,', windowWidth / 7, windowHeight / 5 - 40);
-        text('How are you feeling today?', windowWidth / 7, windowHeight / 5);
+        text('Welcome,', windowWidth / 7, windowHeight / 5 - 40);
+        text('What is your mood today?', windowWidth / 7, windowHeight / 5);
+
 
         //////// IMPLEMENT THE ABOVE WITH SYSTEM VOICE
 
@@ -193,6 +196,13 @@ function draw() {
         ////Draw fingers
         //paint();
 
+        //Voice
+        if ((first_time)){
+            speech.setVolume(0.2)
+            speech.speak('Welcome.. What is your mood today. Please, pick one of the moods below')
+            first_time = false;
+        }
+
     ////// MEDITATION
     } else if (mode === "meditation") {
 
@@ -202,11 +212,6 @@ function draw() {
         textAlign(CENTER)
         //Check mood selection to set mood/colors
         background(Interface.meditation.BackgroundColor[moodNum]);
-
-        back_button.show()
-        back_button.mousePressed(changeModeMain);
-        volume_slider.show()
-        slider_val = volume_slider.value();
 
         if (system.particles.length < 3) {
             system.particles.push(new Particle());
@@ -227,6 +232,11 @@ function draw() {
         textSize(12);
         //text('Return to previous page with SPACEBAR', windowWidth / 2, 7 * windowHeight / 8);
 
+        //Buttons and sliders
+        back_button.show()
+        back_button.mousePressed(changeModeMain);
+        volume_slider.show()
+        slider_val = volume_slider.value();
 
         if (moodNum === 0) {
             sound_prev = sound;
@@ -297,7 +307,13 @@ function mouseReleased() {
 }
 
 function keyPressed() {
-    if (mode === "meditation"){
+    //Switch to fullscreen with F
+    if (keyCode === 70){
+        let scr = fullscreen();
+        fullscreen(!scr);
+    }
+
+    if ((keyCode === 32) && (mode === "meditation")){
         changeModeMain();
     }
 }
@@ -305,6 +321,10 @@ function keyPressed() {
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
     system = new ParticleSystem(createVector(windowWidth / 2, windowHeight / 2));
+
+    displayButton(back_button);
+    displayButton(instr_button);
+    displaySlider(volume_slider);
 }
 
 
@@ -325,7 +345,7 @@ function displayButton(button){
         b.style('font-size', "11px");
 
     } else if (b === back_button){
-        b.position( 160, windowHeight/20);
+        b.position( 60, windowHeight/20);
         b.style('background-color', "#6E878E");
         b.style('color', "#FFFFFF");
         b.style('font-size', "11px");
@@ -341,6 +361,7 @@ function changeModeInstr(){
 }
 
 function changeModeMain(){
+    back_button.hide();
     mode = "main";
 }
 
@@ -433,7 +454,7 @@ function parseResult() {
     console.log(mostrecentword);
 
     if ((mode === 'meditation') || (mode === 'instructions')) {
-        var user_commands = ['namaste', 'nice', 'finish', 'end', 'I am done', 'back'];
+        var user_commands = ['namaste', 'nice', 'finish', 'end', 'done', 'back'];
         user_commands.forEach(word => {
             if (mostrecentword.indexOf(word) !== -1) {
                 if (word.indexOf('back') === -1) {
@@ -445,6 +466,7 @@ function parseResult() {
         })
 
     } else if (mode === 'main') {
+
         if (mostrecentword.indexOf('focus') !== -1 || (mostrecentword.indexOf('Focus') !== -1)) {
             changeModeMeditation();
             mode = "meditation";
@@ -461,6 +483,9 @@ function parseResult() {
             changeModeMeditation();
             mode = "meditation";
             moodNum = 3;
+        } else if (mostrecentword.indexOf('instructions') !== -1){
+            mode = "instructions";
+            changeModeInstr()
         }
     }
 
