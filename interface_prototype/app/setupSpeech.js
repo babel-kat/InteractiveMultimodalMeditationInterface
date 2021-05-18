@@ -17,12 +17,12 @@ recognition.onresult = function(event) {
             transcript += event.results[i][0].transcript;
     }
 
-    if (DEBUGSPEECH) {
-        if (hasFinal)
-            otherFeedback.setContent("SPEECH DEBUG: ready");
-        else
-            otherFeedback.setContent("SPEECH DEBUG: " + transcript);
-    }
+    // if (DEBUGSPEECH) {
+    //     if (hasFinal)
+    //         otherFeedback.setContent("SPEECH DEBUG: ready");
+    //     else
+    //         otherFeedback.setContent("SPEECH DEBUG: " + transcript);
+    // }
 
     var processed = debouncedProcessSpeech(transcript);
 
